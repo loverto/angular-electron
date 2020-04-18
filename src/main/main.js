@@ -219,6 +219,7 @@ app.on('ready', function() {
   // 注册一个 'F10' 的全局快捷键
   const ret = globalShortcut.register('F10', () => {
     if (!isStart){
+      mainWindow.minimize();
       //crd3m.main(configObject);
       execChildProcess = child_process_1.fork("src/main/exec.js",{env: {storePath:storePath}})
       // 启动后设置为已经启动状态
@@ -234,6 +235,7 @@ app.on('ready', function() {
     console.log('F11 is pressed')
     //app.quit();
     if (isStart){
+      mainWindow.restore();
       isStart = false;
       execChildProcess.kill()
     }

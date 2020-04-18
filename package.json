@@ -1,9 +1,10 @@
 {
   "name": "crd-stb-13",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "CRD手提包13寸排版工具",
   "main": "src/main/main.js",
   "scripts": {
+    "electron-rebuild": "electron-rebuild",
     "release": "electron-builder --publish always",
     "dev": "vue-cli-service electron:serve",
     "lint": "tslint src/**/*.ts -- --fix",
@@ -79,7 +80,9 @@
     "tslint-config-standard": "^7.0.0",
     "typescript": "~3.7.3",
     "electron-packager": "14.2.1",
-    "electron-builder": "22.4.1"
+    "electron-builder": "22.4.1",
+    "winax": "1.17.0",
+    "electron-rebuild": "1.10.1"
   },
   "dependencies": {
     "axios": "^0.19.0",
