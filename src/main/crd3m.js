@@ -10,6 +10,16 @@ const dmExt = require('./dm.dll.ext')
 const coreldraw = require('./coreldraw')
 const common = require('./common')
 
+const log4js = require('log4js');
+log4js.configure({
+    appenders: {
+        out: { type: 'stdout' },
+        stb13: { type: 'file', filename: 'stb-13.log' } },
+    categories: { default: { appenders: ['out','stb13'], level: 'debug' } }
+});
+
+const logger = log4js.getLogger('stb');
+
 const {DB} = require('../universal/database')
 
 // 获取大漠插件的版本
@@ -129,33 +139,40 @@ function readFileToArr(fReadName,callback){
  * 主方法
  */
 function main(configObject) {
-
+    logger.debug("stb 13 is starting up ")
     if (!configObject){
         let storePath = process.env.storePath;
         db = new DB(storePath);
-        console.log("from db config")
+        logger.debug("from db config")
         configObject  = db.get("configObject");
-        console.log(configObject)
+        logger.debug("config value " + JSON.stringify(configObject))
     }
 
 
     initConfig(configObject);
     // 如果没有找到窗口，则退出
     if (!coreldraw.findCorelDrawAndFullScreen(windowTitle)){
+        logger.debug("corel draw window is not find")
         return;
     };
 
     //activeInput(windowTitle,"US")
     // return;
+    logger.debug("corel draw eas")
     coreldraw.eas();
+    logger.debug("corel draw start open model")
     coreldraw.openUModel(modelFilePath)
     sleep.msleep(1000)
+    logger.debug("corel draw mouse is move arrow")
     // 设置为可移动
     coreldraw.moveAndClick(arrowCoordinate)
     if (fs.existsSync(textFilePath)){
+        logger.debug("file is exists")
         //let readFileSync = fs.readFileSync(textFilePath);
         // 按行读取数据
         readFileToArr(textFilePath,function (data) {
+            logger.debug("data length"+data.length)
+
             // 遍历按行读取的数据
             for (let i =0; i<data.length; i++){
                 // 判断当前是第几张图
