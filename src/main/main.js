@@ -148,7 +148,7 @@ function updateHandle(){
         message: message.downloaded,
         //detail: releaseName + "\n\n" + releaseNotes
       });
-      console.log(index);
+      log.info(index);
       if (index === 1) return;
       //在下载完成后，重启当前的应用并且安装更新
       autoUpdater.quitAndInstall();
@@ -221,18 +221,19 @@ app.on('ready', function() {
     if (!isStart){
       mainWindow.minimize();
       //crd3m.main(configObject);
-      execChildProcess = child_process_1.fork("src/main/exec.js",{env: {storePath:storePath}})
+      log.info(__dirname)
+      execChildProcess = child_process_1.fork(__dirname+"/exec.js",{env: {storePath:storePath}})
       // 启动后设置为已经启动状态
       isStart = true;
     }
     // process.exit(22)
-    // console.log('F10 is pressed')
+    // log.info('F10 is pressed')
   })
 
   // 注册一个 'F11' 的全局快捷键
   const ret1 = globalShortcut.register('F11', () => {
     //child.send({'shutdown': true})
-    console.log('F11 is pressed')
+    log.info('F11 is pressed')
     //app.quit();
     if (isStart){
       mainWindow.restore();
@@ -243,15 +244,15 @@ app.on('ready', function() {
   })
 
   if (!ret) {
-    console.log('F10 registration failed')
+    log.info('F10 registration failed')
   }
   if (!ret1) {
-    console.log('F11 registration failed')
+    log.info('F11 registration failed')
   }
 
   // 检查快捷键是否注册成功
-  console.log(globalShortcut.isRegistered('F10'))
-  console.log(globalShortcut.isRegistered('F11'))
+  log.info(globalShortcut.isRegistered('F10'))
+  log.info(globalShortcut.isRegistered('F11'))
 
 })
 
@@ -377,7 +378,7 @@ let isStart = false;
 //findCorelDrawAndFullScreen()
 
 ipcMain.on('start', (sys, msg) => {
-  console.log(msg) //接收窗口传来的消息
+  log.info(msg) //接收窗口传来的消息
   if (!isStart){
 
 //D:\app\software\测试文件\做图用版\选图\AL-001.jpg
@@ -385,7 +386,7 @@ ipcMain.on('start', (sys, msg) => {
     mainWindow.minimize();
     // configObject = JSON.parse(msg);
     //crd3m.main(configObject);
-    execChildProcess = child_process_1.fork("src/main/exec.js",{env: {storePath:storePath}})
+    execChildProcess = child_process_1.fork(__dirname+"/exec.js",{env: {storePath:storePath}})
     // 启动后设置为已经启动状态
     isStart = true;
   }

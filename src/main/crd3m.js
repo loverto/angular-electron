@@ -14,7 +14,7 @@ const log4js = require('log4js');
 log4js.configure({
     appenders: {
         out: { type: 'stdout' },
-        stb13: { type: 'file', filename: 'stb-13.log' } },
+        stb13: { type: 'file', filename: process.env.storePath+path.sep+'stb-13.log' } },
     categories: { default: { appenders: ['out','stb13'], level: 'debug' } }
 });
 
