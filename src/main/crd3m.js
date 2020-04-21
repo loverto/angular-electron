@@ -190,44 +190,44 @@ function main(configObject) {
                     // 替换编号
                     coreldraw.findAndReplaceText(replaceCoordinate,findText,pch);
 
-                    let exportFileName = exportModelFilePath + path.sep + pch + jpgSuffix;
+                    // let exportFileName = exportModelFilePath + path.sep + pch + jpgSuffix;
 
                     // activeInput(windowTitle,input);
 
                     // 导出指定格式的数据
-                    coreldraw.exportFormate(exportCoordinate,exportFileName);
-
-                    // 休眠80秒
-                    sleep.msleep(80000)
-                    dm.moveTo(dpiSwitchFlagCoordinate[0],dpiSwitchFlagCoordinate[1]);
-                    sleep.msleep(500)
-                    dm.leftClick();
-                    sleep.msleep(500)
-                    // 休眠80秒
-                    sleep.msleep(30000)
-
-                    // 判断是否开启转换状态
-
-                    let color = dm.getColor(dpiSwitchFlagCoordinate[0],dpiSwitchFlagCoordinate[1]);
-
-                    console.log(color);
-                    // 不匹配的情况下怎么做
-                    if((dmExt.cmpColor(dpiSwitchFlagCoordinate[0],dpiSwitchFlagCoordinate[1],dpiSwitchFlagColor,dpiSwitchFlagSim)==1)){
-                        dm.moveTo(dpiSwitchCoordinate[0],dpiSwitchCoordinate[1]);
-                        sleep.msleep(500)
-                        dm.leftClick();
-                        sleep.msleep(500)
-                    }
-
-                    // 设置dpi的值
-                    common.adjustInterfaceValueNotCtrlAndA(dpiUIPosition,dpiValue);
-                    dm.moveTo(dpiSwitchCoordinate[0],dpiSwitchCoordinate[1]);
-                    sleep.msleep(500)
-                    dm.leftClick();
-                    sleep.msleep(500)
-                    sleep.msleep(30000);
-                    coreldraw.enter();
-                    sleep.msleep(200);
+                    // coreldraw.exportFormate(exportCoordinate,exportFileName);
+                    //
+                    // // 休眠80秒
+                    // sleep.msleep(80000)
+                    // dm.moveTo(dpiSwitchFlagCoordinate[0],dpiSwitchFlagCoordinate[1]);
+                    // sleep.msleep(500)
+                    // dm.leftClick();
+                    // sleep.msleep(500)
+                    // // 休眠80秒
+                    // sleep.msleep(30000)
+                    //
+                    // // 判断是否开启转换状态
+                    //
+                    // let color = dm.getColor(dpiSwitchFlagCoordinate[0],dpiSwitchFlagCoordinate[1]);
+                    //
+                    // console.log(color);
+                    // // 不匹配的情况下怎么做
+                    // if((dmExt.cmpColor(dpiSwitchFlagCoordinate[0],dpiSwitchFlagCoordinate[1],dpiSwitchFlagColor,dpiSwitchFlagSim)==1)){
+                    //     dm.moveTo(dpiSwitchCoordinate[0],dpiSwitchCoordinate[1]);
+                    //     sleep.msleep(500)
+                    //     dm.leftClick();
+                    //     sleep.msleep(500)
+                    // }
+                    //
+                    // // 设置dpi的值
+                    // common.adjustInterfaceValueNotCtrlAndA(dpiUIPosition,dpiValue);
+                    // dm.moveTo(dpiSwitchCoordinate[0],dpiSwitchCoordinate[1]);
+                    // sleep.msleep(500)
+                    // dm.leftClick();
+                    // sleep.msleep(500)
+                    // sleep.msleep(30000);
+                    // coreldraw.enter();
+                    // sleep.msleep(200);
 
                     let exportPathAbsout = exportModelFilePath + path.sep + pch + fileSuff;
                     coreldraw.saveAsPath(exportPathAbsout);

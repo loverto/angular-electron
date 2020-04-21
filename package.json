@@ -1,17 +1,17 @@
 {
   "name": "crd-stb-13",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "CRD手提包13寸排版工具",
   "main": "src/main/main.js",
   "scripts": {
-    "electron-rebuild": "electron-rebuild",
+    "electron-rebuild": "electron-rebuild.cmd",
     "release": "electron-builder --publish always",
     "dev": "vue-cli-service electron:serve",
     "lint": "tslint src/**/*.ts -- --fix",
     "dist-win": "electron-builder --win --ia32",
     "start": "chcp 65001 && electron .",
     "package": "electron-packager . HelloWorld --platform=win32 --arch=ia32 --icon=icon.ico --out=./out --asar --app-version=0.0.1",
-    "rebuildwinax:gyp": "cd ./node_modules/winax && node-gyp rebuild --runtime=electron --msvs_version=2017  --target=6.0.9 --dist-url=https://npm.taobao.org/mirrors/atom-shell",
+    "rebuildwinax:gyp": "cd ./node_modules/winax && node-gyp rebuild --arch=ia32 --build-from-source --runtime=electron --msvs_version=2017  --target=8.2.3 --dist-url=https://www.electronjs.org/headers",
     "rebuildsleep:gyp": "cd ./node_modules/sleep && node-gyp rebuild --runtime=electron --msvs_version=2017  --target=6.0.9 --dist-url=https://npm.taobao.org/mirrors/atom-shell"
   },
   "husky": {
@@ -75,13 +75,13 @@
     "vue-cli-plugin-electron-builder": "^1.4.2",
     "vue-property-decorator": "^8.3.0",
     "vue-template-compiler": "^2.6.10",
-    "electron": "6.0.9",
+    "electron": "8.2.3",
     "tslint": "^5.10.0",
     "tslint-config-standard": "^7.0.0",
     "typescript": "~3.7.3",
     "electron-packager": "14.2.1",
     "electron-builder": "22.4.1",
-    "winax": "1.17.0",
+    "winax": "1.18.0",
     "electron-rebuild": "1.10.1"
   },
   "dependencies": {
@@ -98,7 +98,6 @@
     "keycode": "2.2.0",
     "lodash-id": "^0.14.0",
     "lowdb": "^1.0.0",
-    "sleep": "6.1.0",
     "vue": "^2.6.10",
     "vue-gallery": "^2.0.1",
     "vue-lazyload": "^1.2.6",
