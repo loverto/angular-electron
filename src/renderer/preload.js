@@ -26,6 +26,19 @@ window.addEventListener('DOMContentLoaded', () => {
 
     let currentVersion = db.get("currentVersion");
 
+    ipc.on('refresh',()=>{
+        // 从 数据库中读取配置文件
+        if (db.has('configObject')) {
+            console.log("the input value from to db")
+            configObject = db.get('configObject');
+            imageFilePathText.value = configObject.imageFilePath;
+            textFilePathText.value = configObject.textFilePath;
+            modelFilePathText.value = configObject.modelFilePath;
+            exportModelFilePathText.value = configObject.exportModelFilePath;
+            pchText.value = configObject.pch;
+        }
+    })
+
 
 
 

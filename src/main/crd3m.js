@@ -9,6 +9,7 @@ const readline = require('readline');
 const dmExt = require('./dm.dll.ext')
 const coreldraw = require('./coreldraw')
 const common = require('./common')
+const _ = require('lodash')
 
 const log4js = require('log4js');
 log4js.configure({
@@ -23,7 +24,7 @@ const logger = log4js.getLogger('stb');
 const {DB} = require('../universal/database')
 
 // 获取大漠插件的版本
-console.log(dm.dll.ver())
+logger.debug(dm.dll.ver())
 
 let db = null;
 
@@ -31,7 +32,7 @@ const windowTitle = "CorelDRAW X6 (64 位)";
 let devWidth = 1440
 let devHeight = 900
 let screenSize = dm.getScreenSize();
-console.log(screenSize)
+logger.debug(screenSize)
 let winW = screenSize.width/devWidth;
 let winH = screenSize.height/devHeight;
 
@@ -170,96 +171,89 @@ function main(configObject) {
         logger.debug("file is exists")
         //let readFileSync = fs.readFileSync(textFilePath);
         // 按行读取数据
-        readFileToArr(textFilePath,function (data) {
-            logger.debug("data length"+data.length)
+        readFileToArr(textFilePath,function (dataa) {
+            logger.debug("data length"+dataa.length)
+
+            let i =0;
+            let j = 0
+            // 先屏蔽该逻辑
+            if (db.has('crd') && false){
+                let crd = db.get('crd');
+                logger.debug("crd from db config"+JSON.stringify(crd));
+                // 当前执行的批次数
+                i = crd.currentBatch;
+                // 当前执行的条数
+                j = crd.currentRow;
+                // 获取缓存的批次号
+                pch = crd.pch;
+                // 获取缓存的批次号量
+                pchIncreateFlag = crd.pchIncreateFlag;
+            }
+            let dataArr = _.chunk(dataa,13);
 
             // 遍历按行读取的数据
-            for (let i =0; i<data.length; i++){
-                // 判断当前是第几张图
-                let number = i%13;
-                // 够14张则保存图片
-                if (i>0 && number==0){
-                    let jpgSuffix = ".jpg";
-                    // 获取序列号
-                    let result = common.getSequenceNumber(pch,pchIncreateFlag);
-                    pch = result.pch;
-                    pchIncreateFlag = result.pchIncreateFlag
-                    let input = "US"
-                    // activeInput(windowTitle,input);
+            for (i; i<dataArr.length; i++){
+                //db.set('crd',{currentBatch: i,pch:pch,pchIncreateFlag:pchIncreateFlag})
+                let data = dataArr[i]
+                for (j;j<data.length;j++){
 
-                    // 替换编号
-                    coreldraw.findAndReplaceText(replaceCoordinate,findText,pch);
-
-                    // let exportFileName = exportModelFilePath + path.sep + pch + jpgSuffix;
-
-                    // activeInput(windowTitle,input);
-
-                    // 导出指定格式的数据
-                    // coreldraw.exportFormate(exportCoordinate,exportFileName);
-                    //
-                    // // 休眠80秒
-                    // sleep.msleep(80000)
-                    // dm.moveTo(dpiSwitchFlagCoordinate[0],dpiSwitchFlagCoordinate[1]);
-                    // sleep.msleep(500)
-                    // dm.leftClick();
-                    // sleep.msleep(500)
-                    // // 休眠80秒
-                    // sleep.msleep(30000)
-                    //
-                    // // 判断是否开启转换状态
-                    //
-                    // let color = dm.getColor(dpiSwitchFlagCoordinate[0],dpiSwitchFlagCoordinate[1]);
-                    //
-                    // console.log(color);
-                    // // 不匹配的情况下怎么做
-                    // if((dmExt.cmpColor(dpiSwitchFlagCoordinate[0],dpiSwitchFlagCoordinate[1],dpiSwitchFlagColor,dpiSwitchFlagSim)==1)){
-                    //     dm.moveTo(dpiSwitchCoordinate[0],dpiSwitchCoordinate[1]);
-                    //     sleep.msleep(500)
-                    //     dm.leftClick();
-                    //     sleep.msleep(500)
-                    // }
-                    //
-                    // // 设置dpi的值
-                    // common.adjustInterfaceValueNotCtrlAndA(dpiUIPosition,dpiValue);
-                    // dm.moveTo(dpiSwitchCoordinate[0],dpiSwitchCoordinate[1]);
-                    // sleep.msleep(500)
-                    // dm.leftClick();
-                    // sleep.msleep(500)
-                    // sleep.msleep(30000);
-                    // coreldraw.enter();
-                    // sleep.msleep(200);
-
-                    let exportPathAbsout = exportModelFilePath + path.sep + pch + fileSuff;
-                    coreldraw.saveAsPath(exportPathAbsout);
-                    sleep.msleep(2000)
-                    coreldraw.closeModel();
-                    sleep.msleep(1000)
-                    coreldraw.eas();
-                    // 保存当前的序列号
-                    if(db.has("configObject")){
-                        configObject.pch = pch;
-                        db.set("configObject",configObject)
+                    let picfilename = data[j];
+                    let picPath = common.getFilePathByFileName(imageFilePath,picfilename);
+                    // 图片路径和模板路径都存在
+                    if (fs.existsSync(picPath) && fs.existsSync(modelFilePath)){
+                        handler(picPath,null,false,modelCoordinate,picfilename,j)
                     }
-                    if (i<data.length-1){
+                    logger.debug("开始点击空白位置")
+                    sleep.msleep(500)
+                    coreldraw.moveAndClick(clickWhite)
+                    sleep.msleep(500)
+
+                    // 执行完数组中的值，就保存够13张则保存图片
+                    if (j==data.length-1){
+                        logger.debug("张数够了，开始保存")
+                        logger.debug("开始获取序列号"+pch+pchIncreateFlag)
+                        // 获取序列号
+                        let result = common.getSequenceNumber(pch,pchIncreateFlag);
+                        logger.debug("获取序列号后的结果"+JSON.stringify(result))
+                        pch = result.pch;
+                        pchIncreateFlag = result.pchIncreateFlag
+                        let crd = {currentBatch:i,currentRow: j,pch:pch,pchIncreateFlag:pchIncreateFlag};
+                        logger.debug("开始存储序列号到数据库中"+JSON.stringify(crd))
+                        db.set('crd',crd)
+                        logger.debug("开始替换编号")
+                        // 替换编号
+                        coreldraw.findAndReplaceText(replaceCoordinate,findText,pch);
+
+                        sleep.msleep(200);
+                        logger.debug("开始保存文件")
+                        let exportPathAbsout = exportModelFilePath + path.sep + pch + fileSuff;
+                        logger.debug("开始另存为"+exportPathAbsout)
+                        coreldraw.saveAsPath(exportPathAbsout);
+                        sleep.msleep(3000)
+                        logger.debug("保存完毕，开始关闭当前标签页")
+                        coreldraw.closeModel();
                         sleep.msleep(500)
-                        coreldraw.openUModel(modelFilePath);
-                        sleep.msleep(200)
-                        // 可移动坐标
-                        coreldraw.moveAndClick(arrowCoordinate)
+                        logger.debug("关闭完毕")
+                        coreldraw.eas();
+                        // 保存当前的序列号
+                        if(db.has("configObject")){
+                            configObject.pch = pch;
+                            db.set("configObject",configObject)
+                            logger.debug("把pch保存到数据库中"+JSON.stringify(configObject))
+                        }
+
                     }
+
                 }
 
-
-                let picfilename = data[i];
-                let picPath = common.getFilePathByFileName(imageFilePath,picfilename);
-                // 图片路径和模板路径都存在
-                if (fs.existsSync(picPath) && fs.existsSync(modelFilePath)){
-                    handler(picPath,null,false,modelCoordinate,picfilename,number)
+                logger.debug("保存之后，判断是否需要打开新的模板")
+                if (i<=data.length-1){
+                    sleep.msleep(500)
+                    coreldraw.openUModel(modelFilePath);
+                    sleep.msleep(200)
+                    // 可移动坐标
+                    coreldraw.moveAndClick(arrowCoordinate)
                 }
-                sleep.msleep(500)
-                coreldraw.moveAndClick(clickWhite)
-                sleep.msleep(500)
-
 
             }
 
@@ -275,10 +269,11 @@ function main(configObject) {
                 db.set("configObject",configObject)
             }
 
-
+            process.send({totalSize:dataa.length})
 
         })
     }
+
 }
 
 
@@ -300,23 +295,30 @@ function activeInput(windowTitle,input) {
  * @param number 当前张数
  */
 function handler(coreldrawHandlerFilePath,model,flag,coordinateArray,filename,number) {
-
+    logger.debug("corelDrawHandlerFilePath:"+coreldrawHandlerFilePath+"model:"+model
+    + "flag:" + flag+"coordinateArray:"+coordinateArray+"filename:"+filename+
+        "number:"+number
+    )
     sleep.msleep(500)
+    logger.debug("start import model")
     coreldraw.importUModel(coreldrawHandlerFilePath);
     sleep.msleep(500)
+    logger.debug("start position"+JSON.stringify(leftClickCoordinate))
     dm.moveTo(leftClickCoordinate[0],leftClickCoordinate[1])
     sleep.msleep(200)
     dm.leftClick();
     sleep.msleep(1000)
-
+    logger.debug("开始接触组合")
     // 解锁
     coreldraw.ctrlAndU()
 
+    logger.debug("点击空白坐标")
     // 点击空白坐标
     sleep.msleep(500)
     coreldraw.moveAndClick(clickWhite)
     sleep.msleep(500)
 
+    logger.debug("开始删除无关的图")
     // 删除不相关的图
     let moveCoordinate = [];
     // 13 寸
@@ -327,15 +329,16 @@ function handler(coreldrawHandlerFilePath,model,flag,coordinateArray,filename,nu
     if (number < 9){
         // 移动到旋转坐标
         let spinNumber = 90;
-        console.log("开始旋转对象")
+        logger.debug("开始旋转对象")
         common.adjustObjectInInterfaceValue(moveCoordinate,spinCoordinate,spinNumber);
-        console.log("旋转对象结束")
+        logger.debug("旋转对象结束")
         let spinCoordinateElement = modelSpin[number];
         endCoordinate = spinCoordinateElement.split(",");
     }else {
         let modelNormalElement = modelSpin[number];
         endCoordinate = modelNormalElement.split(",");
     }
+    logger.debug("开始移动图片")
     common.selectAreaByPointArray(moveCoordinate,endCoordinate);
 
 }

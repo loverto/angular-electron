@@ -2,6 +2,7 @@
 const {app,dialog , BrowserWindow,Menu,shell,ipcMain,globalShortcut} = require('electron')
 const path = require('path')
 const fs = require('fs-extra')
+const common = require('./common')
 
 const log = require('electron-log');
 
@@ -209,6 +210,7 @@ let execChildProcess = null;
 
 let configObject = null;
 
+
 app.on('ready', function() {
   // autoUpdater.checkForUpdatesAndNotify();
 
@@ -223,6 +225,15 @@ app.on('ready', function() {
       //crd3m.main(configObject);
       log.info(__dirname)
       execChildProcess = child_process_1.fork(__dirname+"/exec.js",{env: {storePath:storePath}})
+
+      execChildProcess.on('message',function (m) {
+        dialog.showMessageBox(mainWindow, {
+          type: 'info',
+          buttons: ['OK'],
+          title: "13面手提包CRD",
+          message: "执行完毕,本次共执行 "+m.totalSize+" 条"
+        });
+      })
       // 启动后设置为已经启动状态
       isStart = true;
     }
@@ -238,6 +249,21 @@ app.on('ready', function() {
     if (isStart){
       mainWindow.restore();
       isStart = false;
+      if (db.has('crd')){
+        let crd = db.get('crd');
+
+        // 判断到处目录中已经有文件才加一，否则不加一
+        //if (configObject.exportModelFilePath)
+
+        // configObject = db.get('configObject');
+        // let re = common.getSequenceNumber(crd.pch,crd.pchIncreateFlag);
+        // crd.pch = re.pch;
+        // crd.pchIncreateFlag = re.pchIncreateFlag;
+        // db.set('crd',crd)
+        // configObject.pch = re.pch;
+        // db.set('configObject',configObject);
+        mainWindow.webContents.send('refresh','refresh');
+      }
       execChildProcess.kill()
     }
     // process.exit(22)
@@ -387,6 +413,15 @@ ipcMain.on('start', (sys, msg) => {
     // configObject = JSON.parse(msg);
     //crd3m.main(configObject);
     execChildProcess = child_process_1.fork(__dirname+"/exec.js",{env: {storePath:storePath}})
+
+    execChildProcess.on('message',function (m) {
+      dialog.showMessageBox(mainWindow, {
+        type: 'info',
+        buttons: ['OK'],
+        title: "13面手提包CRD",
+        message: "执行完毕,本次共执行 "+m.totalSize+" 条"
+      });
+    })
     // 启动后设置为已经启动状态
     isStart = true;
   }

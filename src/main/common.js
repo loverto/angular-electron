@@ -135,9 +135,10 @@ function getSequenceNumber(pch,pchIncreateFlag) {
     if (pchIncreateFlag == -1){
         result = pch
         pchIncreateFlag = pchIncreate
+        console.log(" pch increate flag pch: "+ result + "pchIncreateFlag:" + pchIncreateFlag)
         return  {pch:result,pchIncreateFlag:pchIncreateFlag};
     }
-    if (pchIncreate == pchIncreateFlag){
+    if (pchIncreate*1 == pchIncreateFlag*1){
         pchIncreate = ((pchIncreateFlag*1)+1)+"";
         pchArr[length]=pchIncreate;
         pchIncreateFlag = pchIncreate;
@@ -221,19 +222,19 @@ function adjustObjectInInterfaceValue(objectCoordinate, menuCoordinate, adjustVa
  */
 function adjustInterfaceValue(menuCoordinate, adjustValue) {
     dm.moveTo(menuCoordinate[0], menuCoordinate[1])
-    sleep.msleep(1000)
+    sleep.msleep(500)
     dm.leftClick();
-    sleep.msleep(1000)
+    sleep.msleep(500)
     ctrlAndA();
-    sleep.msleep(1000)
+    sleep.msleep(500)
     deleteObj();
     sleep.msleep(1000)
     dmExt.setClipboard(adjustValue)
-    sleep.msleep(1000)
+    sleep.msleep(500)
     ctrlAndV();
-    sleep.msleep(1000)
+    sleep.msleep(500)
     enter();
-    sleep.msleep(1000)
+    sleep.msleep(500)
 }
 
 /**

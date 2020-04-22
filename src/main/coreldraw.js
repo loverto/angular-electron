@@ -216,7 +216,7 @@ function importUModel(path) {
     ctrlAndV();
     sleep.msleep(500)
     enter();
-    sleep.msleep(500)
+    sleep.msleep(1500)
 }
 
 
@@ -381,22 +381,22 @@ function findAndReplaceText(replaceCoordinate,findText,replaceText) {
 
 
     dmExt.setClipboard(findText);
-    sleep.msleep(1000)
+    sleep.msleep(500)
     ctrlAndV();
-    sleep.msleep(1000)
+    sleep.msleep(500)
 
     tab();
-    sleep.msleep(1000)
+    sleep.msleep(200)
     tab();
-    sleep.msleep(1000)
+    sleep.msleep(200)
     dmExt.setClipboard(replaceText)
-    sleep.msleep(1000)
+    sleep.msleep(500)
     ctrlAndV();
-    sleep.msleep(1000)
+    sleep.msleep(500)
     tab();
-    sleep.msleep(1000)
+    sleep.msleep(200)
     dm.keyPress(keycode('p'))
-    sleep.msleep(1000)
+    sleep.msleep(500)
     enter();
     sleep.msleep(300)
 
@@ -471,11 +471,11 @@ function deleteOtherObject(coordinateArray, keepPic) {
             continue
         }
         dm.moveTo(coordinateArrayElement[0], coordinateArrayElement[1]);
-        sleep.msleep(700)
+        sleep.msleep(200)
         dm.leftClick();
-        sleep.msleep(500)
+        sleep.msleep(300)
         deleteObj();
-        sleep.msleep(500)
+        sleep.msleep(200)
     }
     return moveCoordinate;
 }
