@@ -190,12 +190,12 @@ function main(configObject) {
                 pchIncreateFlag = crd.pchIncreateFlag;
             }
             let dataArr = _.chunk(dataa,13);
-
+            logger.debug("dataArr ：" + dataArr.length);
             // 遍历按行读取的数据
             for (i; i<dataArr.length; i++){
                 //db.set('crd',{currentBatch: i,pch:pch,pchIncreateFlag:pchIncreateFlag})
                 let data = dataArr[i]
-                for (j;j<data.length;j++){
+                for (let j = 0;j<data.length;j++){
 
                     let picfilename = data[j];
                     let picPath = common.getFilePathByFileName(imageFilePath,picfilename);
@@ -246,6 +246,9 @@ function main(configObject) {
 
                 }
 
+
+                // // 执行完重置该行数据
+                // j = 0;
                 logger.debug("保存之后，判断是否需要打开新的模板")
                 if (i<=data.length-1){
                     sleep.msleep(500)

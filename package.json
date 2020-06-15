@@ -1,6 +1,6 @@
 {
   "name": "crd-stb-13",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "CRD手提包13寸排版工具",
   "main": "src/main/main.js",
   "scripts": {
