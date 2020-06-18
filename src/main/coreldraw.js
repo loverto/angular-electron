@@ -464,6 +464,7 @@ function copyObjectAndMoveCoordinate(copyObjectCoordinate,moveCoordinateArray,cl
  */
 function deleteOtherObject(coordinateArray, keepPic) {
     let moveCoordinate = null;
+    dm.keyDown(keycode('shift'))
     for (let i = 1; i < coordinateArray.length; i++) {
         let coordinateArrayElement = coordinateArray[i].split(',');
         if (i == keepPic) {
@@ -473,10 +474,10 @@ function deleteOtherObject(coordinateArray, keepPic) {
         dm.moveTo(coordinateArrayElement[0], coordinateArrayElement[1]);
         sleep.msleep(200)
         dm.leftClick();
-        sleep.msleep(300)
-        deleteObj();
-        sleep.msleep(200)
     }
+    dm.keyUp(keycode('shift'))
+    deleteObj();
+    sleep.msleep(200)
     return moveCoordinate;
 }
 
