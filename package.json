@@ -20,7 +20,7 @@
     }
   },
   "build": {
-    "appId": "com.yinlongfei",
+    "appId": "com.yinlongfei.13",
     "win": {
       "requestedExecutionLevel": "requireAdministrator",
       "icon": "public/img/icons/android-chrome-512x512.png"
