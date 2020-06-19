@@ -310,7 +310,7 @@ function handler(coreldrawHandlerFilePath,model,flag,coordinateArray,filename,nu
     dm.moveTo(leftClickCoordinate[0],leftClickCoordinate[1])
     sleep.msleep(200)
     dm.leftClick();
-    sleep.msleep(1000)
+    sleep.msleep(2000)
     logger.debug("开始接触组合")
     // 解锁
     coreldraw.ctrlAndU()
