@@ -1,5 +1,5 @@
 // 导入大漠插件版本
-const dm = require('dm.dll')
+const dm = require('@loverto/dm.dll')
 
 /**
  * 设置粘贴板

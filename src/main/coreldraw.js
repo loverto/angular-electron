@@ -2,7 +2,7 @@
 
 // 导入大漠插件版本
 
-const dm = require('dm.dll')
+const dm = require('@loverto/dm.dll')
 const keycode = require('keycode')
 const common = require('./common')
 
@@ -271,13 +271,13 @@ function moveAndClick(coor) {
 }
 
 /**
- *  关闭模板
+ *  关闭模板 Ctrl + F4
  */
 function  closeModel() {
     sleep.msleep(3000)
-    dm.keyDown(17)
-    dm.keyPress(115)
-    dm.keyUp(17)
+    dm.keyDown(keycode("ctrl"))
+    dm.keyPress(keycode("f4"))
+    dm.keyUp(keycode("ctrl"))
     sleep.msleep(3000)
 }
 
@@ -456,6 +456,28 @@ function copyObjectAndMoveCoordinate(copyObjectCoordinate,moveCoordinateArray,cl
 }
 
 
+function deleteOtherObjectForKeepManyObject(coordinateArray, keepPic) {
+    let moveCoordinate = null;
+    dm.keyDown(keycode('shift'))
+    for (let i = 1; i < coordinateArray.length; i++) {
+        let coordinateArrayElement = coordinateArray[i].split(',');
+        if (keepPic.includes(i)) {
+            moveCoordinate = coordinateArrayElement
+            continue
+        }
+        dm.moveTo(coordinateArrayElement[0], coordinateArrayElement[1]);
+        sleep.msleep(200)
+        dm.leftClick();
+    }
+    dm.keyUp(keycode('shift'))
+    deleteObj();
+    sleep.msleep(200)
+    return moveCoordinate;
+}
+
+
+
+
 /**
  * 删除不相关的对象
  * @param coordinateArray 所有对象的坐标点
@@ -535,6 +557,7 @@ exports.ctrlAndA = ctrlAndA
 exports.ctrlAndC = ctrlAndC
 exports.deleteObj = deleteObj
 exports.ctrlAndV = ctrlAndV
+exports.ctrlAndG = ctrlAndG
 exports.enter = enter
 exports.altAndEAndFAndA = altAndEAndFAndA
 exports.findAndReplaceText = findAndReplaceText
@@ -548,5 +571,6 @@ exports.exportFormate = exportFormate
 exports.copyObjectAndMoveCoordinate = copyObjectAndMoveCoordinate
 exports.getObjectWidthAndHeight = getObjectWidthAndHeight
 exports.deleteOtherObject = deleteOtherObject
+exports.deleteOtherObjectForKeepManyObject = deleteOtherObjectForKeepManyObject
 
 

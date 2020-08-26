@@ -1,7 +1,7 @@
 // 导入大漠插件版本
 const path = require("path");
 
-const dm = require('dm.dll')
+const dm = require('@loverto/dm.dll')
 const sleep = require('./sleep');
 const fs = require('fs')
 const readline = require('readline');
@@ -10,6 +10,8 @@ const dmExt = require('./dm.dll.ext')
 const coreldraw = require('./coreldraw')
 const common = require('./common')
 const _ = require('lodash')
+
+const keycode = require('keycode')
 
 const log4js = require('log4js');
 log4js.configure({
@@ -232,6 +234,8 @@ function main(configObject) {
                         sleep.msleep(3000)
                         logger.debug("保存完毕，开始关闭当前标签页")
                         coreldraw.closeModel();
+                        coreldraw.closeModel();
+                        coreldraw.closeModel();
                         sleep.msleep(500)
                         logger.debug("关闭完毕")
                         coreldraw.eas();
@@ -250,7 +254,8 @@ function main(configObject) {
                 // // 执行完重置该行数据
                 // j = 0;
                 logger.debug("保存之后，判断是否需要打开新的模板")
-                if (i<=data.length-1){
+                if (i<=dataArr.length-1){
+                    logger.debug("执行完毕，开始保存，共执行"+i+"版");
                     sleep.msleep(500)
                     coreldraw.openUModel(modelFilePath);
                     sleep.msleep(200)
@@ -279,7 +284,12 @@ function main(configObject) {
 
 }
 
-
+/**
+ * 激活输入法
+ * 该发放暂时不可用
+ * @param windowTitle
+ * @param input
+ */
 function activeInput(windowTitle,input) {
     const hwnd = dm.findWindow("", windowTitle);
     if (dmExt.checkInputMethod(hwnd, input) == 0) {

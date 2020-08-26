@@ -6,6 +6,49 @@ window.addEventListener('DOMContentLoaded', () => {
         if (element) element.innerText = text
     }
 
+    /**
+     * id
+     * @type {Map<any, any>}
+     */
+    let idsMap = new Map();
+    // 属性配置
+    let dialogPropertiesMap = new Map();
+    // 过滤器配置
+    let dialogFiltersMap = new Map();
+    // 按钮与配置键配置
+    let configKeysMap = new Map();
+    // 文本框与配置键配置
+    let textConfigMap = new Map();
+
+
+    idsMap.set('exportModelFilePathBtn','exportModelFilePathText')
+    idsMap.set('imageFilePathBtn','imageFilePathText')
+    idsMap.set('textFilePathBtn','textFilePathText')
+    idsMap.set('modelFilePathBtn','modelFilePathText')
+
+
+    dialogFiltersMap.set('exportModelFilePathBtn',[])
+    dialogFiltersMap.set('imageFilePathBtn',[])
+    dialogFiltersMap.set('textFilePathBtn',[])
+    dialogFiltersMap.set('modelFilePathBtn',[{name:"Corel Draw",extensions: ['cdr']}])
+
+
+    dialogPropertiesMap.set('exportModelFilePathBtn',['openDirectory'])
+    dialogPropertiesMap.set('imageFilePathBtn',['openDirectory'])
+    dialogPropertiesMap.set('textFilePathBtn',['openFile'])
+    dialogPropertiesMap.set('modelFilePathBtn',['openFile'])
+
+    configKeysMap.set('exportModelFilePathBtn','exportModelFilePath');
+    configKeysMap.set('imageFilePathBtn','imageFilePath');
+    configKeysMap.set('textFilePathBtn','textFilePath');
+    configKeysMap.set('modelFilePathBtn','modelFilePath');
+
+    textConfigMap.set('exportModelFilePathText','exportModelFilePath');
+    textConfigMap.set('imageFilePathText','imageFilePath');
+    textConfigMap.set('textFilePathText','textFilePath');
+    textConfigMap.set('modelFilePathText','modelFilePath');
+    textConfigMap.set('pchText','pch');
+
     function $(id){
         return document.getElementById(id);
     }
@@ -14,9 +57,12 @@ window.addEventListener('DOMContentLoaded', () => {
         replaceText(`${type}-version`, process.versions[type])
 
     }
+    // 数据库
     const {DB} = require('../universal/database');
 
-    let app = require('electron').remote.app;
+    let remote = require('electron').remote;
+    let dialog = remote.dialog;
+    let app = remote.app;
 
     let path = app.getPath('userData');
     let db = new DB(path)
@@ -38,227 +84,114 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     })
 
-
-
-
-
-
-
-
-
-
     /**
-     * 创建上传元素
-     * @param id 元素id
-     * @param isDir 是否时文件夹
+     * 配置对象
+     * @type {{mouldFilePath: null, pch: null, modelFilePath: null, textFilePath: null, exportModelFilePath: null, imageFilePath: null}}
      */
-    function createFileElement (id,isDir) {
-        let fileEl = document.getElementById(id)
-        if (!fileEl) {
-            const fileField = document.createElement('input')
-            fileField.id = id
-            fileField.type = 'file'
-            fileField.name = id
-            fileField.accept = 'application/crd'
-            fileField.style = 'display: none;'
-            if (isDir){
-                fileField.accept = 'application/crd'
-                fileField.setAttribute('webkitdirectory',true)
-                fileField.setAttribute('directory',true)
-            }
-            fileEl = fileField
-        }
-        return fileEl
-    }
-
-
-
-    //imageFilePath  // webkitdirectory directory
-    //textFilePath
-    //modelFilePath
-    //exportModelFilePath // webkitdirectory directory
+    let configObjectChange = {
+        imageFilePath:null,
+        exportModelFilePath:null,
+        modelFilePath:null,
+        textFilePath:null,
+        pch:null
+    };
 
     let imageFilePathBtn = $('imageFilePathBtn');
     let textFilePathBtn = $('textFilePathBtn');
     let modelFilePathBtn = $('modelFilePathBtn');
     let exportModelFilePathBtn = $('exportModelFilePathBtn');
     let autoupdateBtn = $('autoupdate');
+
+    let btnArray = [imageFilePathBtn,textFilePathBtn,modelFilePathBtn,exportModelFilePathBtn];
+
     autoupdateBtn.addEventListener("click",function (e) {
         ipc.send('check-for-update', 'event-update');
     })
 
     $('appVersion').innerText = currentVersion.version
 
+
     /**
-     * 处理文件路径
-     * @param filepath
-     * @returns {*}
+     *  改进，使用系统对话框替代浏览器对话框。
+     *  通过electron调用系统的对话框
+     * @param event
      */
-    function getFilePath(filepath){
-        console.log(filepath);
-        let filepathArray = filepath.split('\\');
-        let filepathArrayElement = filepathArray[filepathArray.length-1];
-        console.log(filepathArrayElement);
-        if (filepathArrayElement.indexOf(".")){
-            let slice = filepathArray.slice(0,filepathArray.length-1);
-            console.log(slice)
-            return slice.join('\\')
-        } else {
-            return filepath;
+    function dialogFile(event){
+        // 已经有配置存在了，只修改变更的地址
+        if (db.has('configObject')){
+            configObjectChange = db.get('configObject')
         }
 
+        let eleId = event.currentTarget.id
+
+        let properties = dialogPropertiesMap.get(eleId);
+
+        let configKey = configKeysMap.get(eleId);
+
+        let textId = idsMap.get(eleId);
+
+        let filters = dialogFiltersMap.get(eleId);
+
+        dialog.showOpenDialog({
+            filters:filters,
+            properties: properties
+        }).then(result => {
+            // 不处理取消状态的按钮
+            if (!result.canceled){
+                let filePath = result.filePaths[0];
+                console.log(filePath);
+                configObjectChange[configKey] = filePath;
+                $(textId).value = filePath;
+                db.set('configObject',configObjectChange);
+
+            }
+            console.log(result.canceled)
+            console.log(result.filePaths)
+        }).catch(err => {
+            console.log(err)
+        });
     }
 
-    function handlerFile(event){
+    // 通过遍历优化代码
+    for (let i =0 ;i<btnArray.length;i++){
+        let btnElement = btnArray[i];
+        btnElement.addEventListener('click',dialogFile);
+    }
+
+
+    const imageFilePathText = $('imageFilePathText');
+    const mouldFilePathText = $('mouldFilePathText');
+    const textFilePathText = $('textFilePathText');
+    const modelFilePathText = $('modelFilePathText');
+    const exportModelFilePathText = $('exportModelFilePathText');
+    const pchText = $('pchText');
+
+    let textArray = [imageFilePathText,textFilePathText,modelFilePathText,exportModelFilePathText,pchText];
+
+
+    /**
+     *
+     * @param event
+     */
+    function configChangeEvent(event) {
+        // 已经有配置存在了，只修改变更的地址
+        if (db.has('configObject')){
+            configObjectChange = db.get('configObject')
+        }
+        let value = event.currentTarget.value;
         let eleId = event.currentTarget.id;
-        let fileEle = null;
-        if (eleId.startsWith('imageFilePath')){
-            fileEle = createFileElement('imageFilePath',true)
-        }else if(eleId.startsWith('exportModelFilePath')){
-            fileEle = createFileElement('exportModelFilePath',true)
-        }else if(eleId.startsWith('modelFilePath')){
-            fileEle = createFileElement('modelFilePath',false)
-        }else if(eleId.startsWith('textFilePath')){
-            fileEle = createFileElement('textFilePath',false)
-        }
-        fileEle.click()
-        document.body.append(fileEle)
-        fileEle.onabort = function () { alert() }
-        fileEle.onchange = function (event) {
-            let configObjectChange = {
-                imageFilePath:null,
-                exportModelFilePath:null,
-                modelFilePath:null,
-                textFilePath:null,
-                pch:null
-            };
-            // 已经有配置存在了，只修改变更的地址
-            if (db.has('configObject')){
-               configObjectChange = db.get('configObject')
-            }
-            // 获取值
-            let filePath = event.currentTarget.files[0].path;
-            if (eleId.startsWith('imageFilePath')){
-                filePath = getFilePath(filePath);
-                configObjectChange.imageFilePath = filePath
-                $('imageFilePathText').value = filePath;
-            }else if(eleId.startsWith('exportModelFilePath')){
-                filePath = getFilePath(filePath);
-                configObjectChange.exportModelFilePath = filePath
-                $('exportModelFilePathText').value = filePath;
-            }else if(eleId.startsWith('modelFilePath')){
-                configObjectChange.modelFilePath = filePath
-                $('modelFilePathText').value = filePath;
-            }else if(eleId.startsWith('textFilePath')){
-                configObjectChange.textFilePath = filePath
-                $('textFilePathText').value = filePath;
-            }
-            // 把变动过的设置进去
-            db.set('configObject',configObjectChange);
-        }
+        let configKey = textConfigMap.get(eleId)
+        configObjectChange[configKey] = value;
+        db.set('configObject',configObjectChange);
+    }
+
+
+    for (let i = 0;i<textArray.length;i++){
+        let textElement = textArray[i];
+        textElement.addEventListener('change',configChangeEvent)
 
     }
 
-    imageFilePathBtn.addEventListener('click',handlerFile)
-    textFilePathBtn.addEventListener('click',handlerFile)
-    modelFilePathBtn.addEventListener('click',handlerFile)
-    exportModelFilePathBtn.addEventListener('click',handlerFile)
-
-    const imageFilePath = document.getElementById('imageFilePath');
-    const textFilePath = document.getElementById('textFilePath');
-    const modelFilePath = document.getElementById('modelFilePath');
-    const exportModelFilePath = document.getElementById('exportModelFilePath');
-
-    const imageFilePathText = document.getElementById('imageFilePathText');
-    const textFilePathText = document.getElementById('textFilePathText');
-    const modelFilePathText = document.getElementById('modelFilePathText');
-    const exportModelFilePathText = document.getElementById('exportModelFilePathText');
-    const pchText = document.getElementById('pchText');
-
-    imageFilePathText.addEventListener("change",function (event) {
-        let configObjectChange = {
-            imageFilePath:null,
-            exportModelFilePath:null,
-            modelFilePath:null,
-            textFilePath:null,
-            pch:null
-        };
-        // 已经有配置存在了，只修改变更的地址
-        if (db.has('configObject')){
-            configObjectChange = db.get('configObject')
-        }
-        let value = event.currentTarget.value;
-        configObjectChange.imageFilePath = value;
-        db.set('configObject',configObjectChange);
-    })
-
-    textFilePathText.addEventListener("change",function (event) {
-        let configObjectChange = {
-            imageFilePath:null,
-            exportModelFilePath:null,
-            modelFilePath:null,
-            textFilePath:null,
-            pch:null
-        };
-        // 已经有配置存在了，只修改变更的地址
-        if (db.has('configObject')){
-            configObjectChange = db.get('configObject')
-        }
-        let value = event.currentTarget.value;
-        configObjectChange.textFilePath = value;
-        db.set('configObject',configObjectChange);
-    })
-
-    modelFilePathText.addEventListener("change",function (event) {
-        let configObjectChange = {
-            imageFilePath:null,
-            exportModelFilePath:null,
-            modelFilePath:null,
-            textFilePath:null,
-            pch:null
-        };
-        // 已经有配置存在了，只修改变更的地址
-        if (db.has('configObject')){
-            configObjectChange = db.get('configObject')
-        }
-        let value = event.currentTarget.value;
-        configObjectChange.modelFilePath = value;
-        db.set('configObject',configObjectChange);
-    })
-
-    exportModelFilePathText.addEventListener("change",function (event) {
-        let configObjectChange = {
-            imageFilePath:null,
-            exportModelFilePath:null,
-            modelFilePath:null,
-            textFilePath:null,
-            pch:null
-        };
-        // 已经有配置存在了，只修改变更的地址
-        if (db.has('configObject')){
-            configObjectChange = db.get('configObject')
-        }
-        let value = event.currentTarget.value;
-        configObjectChange.exportModelFilePath = value;
-        db.set('configObject',configObjectChange);
-    })
-
-    pchText.addEventListener("change",function (event) {
-        let configObjectChange = {
-            imageFilePath:null,
-            exportModelFilePath:null,
-            modelFilePath:null,
-            textFilePath:null,
-            pch:null
-        };
-        // 已经有配置存在了，只修改变更的地址
-        if (db.has('configObject')){
-            configObjectChange = db.get('configObject')
-        }
-        let value = event.currentTarget.value;
-        configObjectChange.pch = value;
-        db.set('configObject',configObjectChange);
-    })
 
     let configObject = null;
 
@@ -273,10 +206,10 @@ window.addEventListener('DOMContentLoaded', () => {
         pchText.value = configObject.pch;
     }
 
-    const start = document.getElementById('start');
-    const pause = document.getElementById('pause');
-    const end = document.getElementById('end');
-    const updateKey = document.getElementById('updateKey');
+    const start = $('start');
+    const pause = $('pause');
+    const end = $('end');
+    const updateKey = $('updateKey');
 
     start.addEventListener("click", connectMain)
     end.addEventListener("click", stop)
@@ -288,10 +221,10 @@ window.addEventListener('DOMContentLoaded', () => {
     function connectMain() {
         if (!db.has('configObject')) {
             configObject = {
-                imageFilePath: getFilePath(imageFilePath.files[0].path),
-                textFilePath: textFilePath.files[0].path,
-                modelFilePath: modelFilePath.files[0].path,
-                exportModelFilePath: getFilePath(exportModelFilePath.files[0].path),
+                imageFilePath: imageFilePathText.value,
+                textFilePath: textFilePathText.value,
+                modelFilePath: modelFilePathText.value,
+                exportModelFilePath: exportModelFilePathText.value,
                 pch:pchText.value
             }
             db.set('configObject', configObject)
@@ -299,7 +232,7 @@ window.addEventListener('DOMContentLoaded', () => {
         configObject = db.get("configObject");
         console.log(configObject)
         let configObjectString = JSON.stringify(configObject);
-        console.log('index.html', configObjectString);
+        console.log('configObjectString:', configObjectString);
         ipc.send('start', configObjectString)
     }
 })

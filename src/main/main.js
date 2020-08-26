@@ -212,10 +212,7 @@ let configObject = null;
 
 
 app.on('ready', function() {
-  // autoUpdater.checkForUpdatesAndNotify();
 
-  const menu = Menu.buildFromTemplate(template)
-  Menu.setApplicationMenu(menu) // 设置菜单部分
   createWindow()
 
   // 注册一个 'F10' 的全局快捷键
@@ -307,97 +304,6 @@ app.on('activate', function () {
 })
 
 
-
-/**
- * 注册键盘快捷键
- * 其中：label: '切换开发者工具',这个可以在发布时注释掉
- */
-let template = [
-  {
-    label: '编辑',
-    submenu: [{
-      label: '复制',
-      accelerator: 'CmdOrCtrl+C',
-      role: 'copy'
-    }, {
-      label: '粘贴',
-      accelerator: 'CmdOrCtrl+V',
-      role: 'paste'
-    }, {
-      label: '刷新',
-      accelerator: 'CmdOrCtrl+R',
-      click: function (item, focusedWindow) {
-        if (focusedWindow) {
-          // on reload, start fresh and close any old
-          // open secondary windows
-          if (focusedWindow.id === 1) {
-            BrowserWindow.getAllWindows().forEach(function (win) {
-              if (win.id > 1) {
-                win.close()
-              }
-            })
-          }
-          focusedWindow.reload()
-        }
-      }
-    }]
-  },
-  {
-    label: '窗口',
-    role: 'window',
-    submenu: [{
-      label: '最小化',
-      accelerator: 'CmdOrCtrl+M',
-      role: 'minimize'
-    }, {
-      label: '关闭',
-      accelerator: 'CmdOrCtrl+W',
-      role: 'close'
-    }, {
-      label: '切换开发者工具',
-      accelerator: (function () {
-        if (process.platform === 'darwin') {
-          return 'Alt+Command+I'
-        } else {
-          return 'Ctrl+Shift+I'
-        }
-      })(),
-      click: function (item, focusedWindow) {
-        if (focusedWindow) {
-          focusedWindow.toggleDevTools()
-        }
-      }
-    },{
-      type: 'separator'
-    }]
-  },
-  {
-    label: '帮助',
-    role: 'help',
-    submenu: [{
-      label: '意见反馈 )',
-      click: function () {
-        shell.openExternal('https://forum.iptchain.net')
-      }
-    }]
-  }
-]
-
-
-// 针对Windows端的一些配置
-if (process.platform === 'win32') {
-  const helpMenu = template[template.length - 1].submenu
-}
-
-
-
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and require them here.
-
-
-
-
-
 let isStart = false;
 
 
@@ -407,7 +313,6 @@ ipcMain.on('start', (sys, msg) => {
   log.info(msg) //接收窗口传来的消息
   if (!isStart){
 
-//D:\app\software\测试文件\做图用版\选图\AL-001.jpg
     //child = childProcess.fork('src/main/crd3m.js',[],{ env: { dbPath: dbPath } });
     mainWindow.minimize();
     // configObject = JSON.parse(msg);

@@ -1,7 +1,7 @@
 // 导入大漠插件版本
 const sleep = require('./sleep');
 
-const dm = require('dm.dll')
+const dm = require('@loverto/dm.dll')
 const keycode = require('keycode')
 const dmExt = require('./dm.dll.ext')
 // 获取大漠插件的版本
@@ -131,6 +131,14 @@ function getSequenceNumber(pch,pchIncreateFlag) {
     let length = pchArr.length - 1 ;
     // 获取最后一个数字，方便进行累加
     let pchIncreate = pchArr[length];
+    let pchIncreateStr = pchIncreate + "";
+    // 扩展支持以特殊符号结尾的操作
+    let endString = "+"
+    if (pchIncreateStr.endsWith(endString)){
+        pchIncreate = pchIncreateStr.substring(0,pchIncreateStr.length -1)
+    }else {
+        endString = "";
+    }
     // pchIncreateFlag = -1 说明是第一次，第一次，直接返回原值
     if (pchIncreateFlag == -1){
         result = pch
@@ -152,7 +160,7 @@ function getSequenceNumber(pch,pchIncreateFlag) {
         pchIncreate = "0" + pchIncreate
     }
     // 重新赋值
-    pchArr[length]=pchIncreate;
+    pchArr[length]=pchIncreate + endString;
 
     result = pchArr.join("-");
 
@@ -165,15 +173,35 @@ function getSequenceNumber(pch,pchIncreateFlag) {
  * @param fileName
  */
 function getFilePathByFileName(dirPath,fileName) {
+    return getFilePathByFileNameForCaseFilename(dirPath,fileName,true);
+}
+
+
+/**
+ * 根据文件名查找文件全路径
+ * @param dirPath 文件目录
+ * @param fileName 文件名称
+ * @param isIgnoreCaseFilename 是否忽略大小写
+ */
+function getFilePathByFileNameForCaseFilename(dirPath,fileName,isIgnoreCaseFilename) {
     let dirPathResolve = path.resolve(dirPath);
     let files = fs.readdirSync(dirPathResolve);
     let result = "";
     for (let i =0; i<files.length; i++){
         let filename = files[i];
-        if (filename.split(".")[0] == fileName){
-            result = dirPath + path.sep + filename;
-            break;
+        // 判断是否忽略大小写
+        if (isIgnoreCaseFilename){
+            if (filename.split(".")[0].toLocaleLowerCase() == fileName.toLocaleLowerCase()){
+                result = dirPath + path.sep + filename;
+                break;
+            }
+        }else{
+            if (filename.split(".")[0] == fileName){
+                result = dirPath + path.sep + filename;
+                break;
+            }
         }
+
     }
     return result;
 }
