@@ -90,7 +90,7 @@
   },
   "dependencies": {
     "@loverto/dm.dll": "1.1.4",
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "core-js": "^3.3.2",
     "dateformat": "^4.4.1",
     "dayjs": "^1.7.4",
