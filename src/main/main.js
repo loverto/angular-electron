@@ -1,10 +1,19 @@
-// Modules to control application life and create native browser window
-const {app,dialog , BrowserWindow,Menu,shell,ipcMain,globalShortcut} = require('electron')
+import {validation} from "./utils/api/validation";
+
+const {app, dialog, BrowserWindow, Menu, shell, ipcMain, globalShortcut} = require('electron')
 const path = require('path')
 const fs = require('fs-extra')
 const common = require('./common')
 
 const log = require('electron-log');
+
+import login from './init/init-login'
+import {saveOrUpdate} from "./utils/api/loginfo";
+import {getUserinfoListByFilter} from "./utils/api/userinfos";
+import {fork} from 'child_process'
+
+var dateFormat = require("dateformat");
+
 
 const autoUpdater = require('electron-updater').autoUpdater
 // 检测更新，在你想要检查更新的时候执行，renderer事件触发后的操作自行编写
@@ -17,58 +26,30 @@ function sendUpdateMessage(text) {
   mainWindow.webContents.send('message', text)
 }
 
-ipcMain.on('check-for-update', function(event, arg) {
-  //设置检查更新的 url，并且初始化自动更新。这个 url 一旦设置就无法更改。
-
-
-  autoUpdater.on('error', function(error){});
-
-  //当开始检查更新的时候触发
-  autoUpdater.on('checking-for-update', function() {});
-
-  //当发现一个可用更新的时候触发，更新包下载会自动开始
-  autoUpdater.on('update-available', function(info) {});
-
-  //当没有可用更新的时候触发
-  autoUpdater.on('update-not-available', function(info) {});
-
-  // 更新下载进度事件
-  autoUpdater.on('download-progress', function(progressObj) {})
-  /**
-   *  event Event
-   *  releaseNotes String - 新版本更新公告
-   *  releaseName String - 新的版本号
-   *  releaseDate Date - 新版本发布的日期
-   *  updateURL String - 更新地址
-   * */
-  autoUpdater.on('update-downloaded',  function (event, releaseNotes, releaseName, releaseDate, updateUrl, quitAndUpdate) {});
-
-  //执行自动更新检查
-  autoUpdater.checkForUpdates();
-});
 
 let currentVersion = autoUpdater.currentVersion;
 
 
 
 // 检测更新，在你想要检查更新的时候执行，renderer事件触发后的操作自行编写
-function updateHandle(){
-  //minimize
-  ipcMain.on('hide-window', () => {
-    mainWindow.minimize();
-  });
-  //maximize
-  ipcMain.on('show-window', () => {
-    mainWindow.maximize();
-  });
-  //unmaximize
-  ipcMain.on('orignal-window', () => {
-    mainWindow.unmaximize();
-  });
-  //打开默认浏览器
-  ipcMain.on('open-office-website', function(event, arg){
-    shell.openExternal(arg)
-  })
+function updateHandle() {
+    log.info("开始进入 updateHandler 方法")
+    //minimize
+    ipcMain.on('hide-window', () => {
+        mainWindow.minimize();
+    });
+    //maximize
+    ipcMain.on('show-window', () => {
+        mainWindow.maximize();
+    });
+    //unmaximize
+    ipcMain.on('orignal-window', () => {
+        mainWindow.unmaximize();
+    });
+    //打开默认浏览器
+    ipcMain.on('open-office-website', function (event, arg) {
+        shell.openExternal(arg)
+    })
 
   ipcMain.on('check-for-update', function(event, arg) {
     let message={
@@ -82,17 +63,17 @@ function updateHandle(){
     };
 
 
-    autoUpdater.on('error', function(error){
-      return dialog.showMessageBox(mainWindow, {
-        type: 'info',
-        buttons: ['OK'],
-        title: message.appName,
-        message: message.errorTips,
-        detail: '\r' + message.error
-      });
+        autoUpdater.on('error', function (error) {
+            return dialog.showMessageBox(mainWindow, {
+                type: 'info',
+                buttons: ['OK'],
+                title: message.appName,
+                message: message.errorTips,
+                detail: '\r' + message.error
+            });
 
-      sendUpdateMessage(message.error)
-    });
+            sendUpdateMessage(message.error)
+        });
 
     //当开始检查更新的时候触发
     autoUpdater.on('checking-for-update', function() {
@@ -157,13 +138,19 @@ function updateHandle(){
       //mainWindow.webContents.send('isUpdateNow')
     });
 
+        //执行自动更新检查
+        log.info("更新用的环境变量检测:")
+        //执行自动更新检查
+        autoUpdater.checkForUpdates()
+    });
+    log.info("更新用的环境变量检测:")
     //执行自动更新检查
-    autoUpdater.checkForUpdates();
-  });
+    autoUpdater.checkForUpdates()
 }
 
 
-const child_process_1 = require("child_process");
+
+
 
 const storePath = app.getPath('userData')
 // 如果数据目录不存在，则重新创建
@@ -180,24 +167,29 @@ db.set("currentVersion",currentVersion)
 
 let mainWindow =null;
 
-function createWindow () {
-  // Create the browser window.
-  mainWindow = new BrowserWindow({
-    width: 800,
-    height: 600,
-    titleBarStyle: 'hidden',
-    frame:false,
-    webPreferences: {
-      preload: path.join(__dirname, '../renderer/preload.js')
+function createWindow() {
+    // Create the browser window.
+    mainWindow = new BrowserWindow({
+        width: 800,
+        height: 600,
+        titleBarStyle: 'hidden',
+        frame: false,
+        webPreferences: {
+            // preload: path.join(__dirname, '../renderer/renderer.js')
+            nodeIntegration: true
+        }
+    })
+
+    if (process.env.NODE_ENV === 'production') {
+        mainWindow.loadFile(path.resolve(__dirname, `index.html`)).catch(console.error);
+    }else {
+        mainWindow.loadURL(`http://localhost:${process.env.ELECTRON_WEBPACK_WDS_PORT}`)
     }
-  })
-
-  // and load the index.html of the app.
-  mainWindow.loadFile('src/renderer/index.html')
-
-  updateHandle();
-  // Open the DevTools.
-  //mainWindow.webContents.openDevTools()
+    // and load the index.html of the app.
+    // mainWindow.loadFile('../renderer/index.html')
+    log.info("开始调用检测自动更新前")
+    updateHandle();
+    log.info("开始调用检测自动更新后")
 }
 
 // This method will be called when Electron has finished
@@ -211,32 +203,14 @@ let execChildProcess = null;
 let configObject = null;
 
 
-app.on('ready', function() {
+app.on('ready', function () {
 
-  createWindow()
+    createWindow()
 
-  // 注册一个 'F10' 的全局快捷键
-  const ret = globalShortcut.register('F10', () => {
-    if (!isStart){
-      mainWindow.minimize();
-      //crd3m.main(configObject);
-      log.info(__dirname)
-      execChildProcess = child_process_1.fork(__dirname+"/exec.js",{env: {storePath:storePath}})
-
-      execChildProcess.on('message',function (m) {
-        dialog.showMessageBox(mainWindow, {
-          type: 'info',
-          buttons: ['OK'],
-          title: "13面手提包CRD",
-          message: "执行完毕,本次共执行 "+m.totalSize+" 条"
-        });
-      })
-      // 启动后设置为已经启动状态
-      isStart = true;
-    }
-    // process.exit(22)
-    // log.info('F10 is pressed')
-  })
+    // 注册一个 'F10' 的全局快捷键
+    const ret = globalShortcut.register('F10', () => {
+        startUp();
+    })
 
   // 注册一个 'F11' 的全局快捷键
   const ret1 = globalShortcut.register('F11', () => {
@@ -306,31 +280,78 @@ app.on('activate', function () {
 
 let isStart = false;
 
+let startDateTime = null;
 
-//findCorelDrawAndFullScreen()
+/**
+ * 开始执行
+ */
+function startUp() {
+
+    if (!db.has('configObject')){
+        dialog.showMessageBox(mainWindow, {
+            type: 'warning',
+            buttons: ['OK'],
+            title: "授权失败",
+            message: "联系管理员"
+        });
+        return
+    }
+
+    configObject = db.get('configObject');
+    let code = configObject.code;
+    let computerObject = configObject.computerObject;
+    let softwareObject = configObject.softwareObject;
+
+    // 查询用户编号,
+    validation({"code":code,"machineCode":computerObject.machineCode,"softwareId":softwareObject.id}).then(response=>{
+        log.info("检测用户是否有权限存在:"+JSON.stringify(response.data))
+        if (response.data){
+            if (!isStart) {
+                let date = new Date();
+                let sssz = "UTC:yyyy-mm-dd'T'HH:MM:ss.l'Z'";
+                startDateTime = dateFormat(date, sssz);
+                mainWindow.minimize();
+                log.info("开始最小化窗口"+code)
+                getUserinfoListByFilter({"code.equals":code}).then(response=>{
+                    let userinfoObject = response.data
+                    log.info("获取用户信息"+JSON.stringify(userinfoObject))
+                    log.info("__dirname 目录"+__dirname)
+                    let modulePath = __dirname + "/exec.js";
+                    log.info("modulePath 目录"+modulePath)
+                    execChildProcess = fork(modulePath, {env: {storePath: storePath}})
+                    log.info("execChildProcess"+execChildProcess)
+                    execChildProcess.on('message', function (m) {
+                        let date1 = new Date();
+                        let endDateTime = dateFormat(date1, sssz);
+                        let message = "执行完毕,本次共执行 " + m.totalSize + " 条";
+                        let title = "MT 鼠标垫 80";
+                        saveOrUpdate({endDate:endDateTime,message:title + message,startDate:startDateTime,computer:computerObject,software:softwareObject,userinfo:userinfoObject[0]})
+                        dialog.showMessageBox(mainWindow, {
+                            type: 'info',
+                            buttons: ['OK'],
+                            title: title,
+                            message: message
+                        });
+                    })
+                    // 启动后设置为已经启动状态
+                    isStart = true;
+                });
+
+            }
+        }
+    }).catch(error=>{
+        dialog.showMessageBox(mainWindow, {
+            type: 'warning',
+            buttons: ['OK'],
+            title: "授权失败",
+            message: "联系管理员"
+        });
+    })
+}
 
 ipcMain.on('start', (sys, msg) => {
-  log.info(msg) //接收窗口传来的消息
-  if (!isStart){
-
-    //child = childProcess.fork('src/main/crd3m.js',[],{ env: { dbPath: dbPath } });
-    mainWindow.minimize();
-    // configObject = JSON.parse(msg);
-    //crd3m.main(configObject);
-    execChildProcess = child_process_1.fork(__dirname+"/exec.js",{env: {storePath:storePath}})
-
-    execChildProcess.on('message',function (m) {
-      dialog.showMessageBox(mainWindow, {
-        type: 'info',
-        buttons: ['OK'],
-        title: "13面手提包CRD",
-        message: "执行完毕,本次共执行 "+m.totalSize+" 条"
-      });
-    })
-    // 启动后设置为已经启动状态
-    isStart = true;
-  }
-
+    log.info(msg) //接收窗口传来的消息
+    startUp();
 })
 
 ipcMain.on('stop', (sys, msg) => {

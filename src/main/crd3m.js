@@ -23,7 +23,7 @@ log4js.configure({
 
 const logger = log4js.getLogger('stb');
 
-const {DB} = require('../universal/database')
+const {DB} = require('./database')
 
 // 获取大漠插件的版本
 logger.debug(dm.dll.ver())
