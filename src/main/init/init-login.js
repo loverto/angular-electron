@@ -3,6 +3,8 @@ import {getToken} from "../utils/auth";
 
 // 获取本机信息
 import {machineIdSync} from 'node-machine-id';
+// 获取新的id的方法
+import getWindowsMachineId from '../utils/generatorId';
 import os from 'os';
 import fs from 'fs-extra'
 import {app} from 'electron'
@@ -21,7 +23,9 @@ let db = new DB(storePath);
 
 
 // 机器码
-const machineCode = machineIdSync();
+const machineCode = getWindowsMachineId() || machineIdSync();
+
+console.log("id",machineIdSync());
 // 主机名称
 let hostname=os.hostname()
 
@@ -52,6 +56,7 @@ const appVersion = packageInfo.version;
 // 查询是否已经有该机子注册过
 import {getCompterListByFilter,saveOrUpdate} from '../utils/api/compter';
 import {getSoftwareListByFilter} from "../utils/api/software";
+import {log} from "electron-log";
 
 let computerObject = {};
 let softwareObject = {};
@@ -74,7 +79,7 @@ loginByUsername.then(()=>{
 }).then(response=>{
     console.log("检测计算机是否存在:"+JSON.stringify(response.data));
     if(response.data.length==0){
-        return  saveOrUpdate({machineCode:machineCode,name:hostname,code:'备注名称:'+hostname});
+        return  saveOrUpdate({machineCode:machineCode,name:hostname,code:'备注名称:'+hostname,status:true});
     }else {
         return new Promise((resolve, reject) => {
             resolve({data:response.data[0]})

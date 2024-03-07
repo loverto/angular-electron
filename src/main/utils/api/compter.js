@@ -20,8 +20,10 @@ export function getList(query) {
  */
 
 export function saveOrUpdate(data, method = 'post') {
+    // 如果method为空，则默认为post,如果为put 则为更新,需要把路径加上id,把下面代码优化一下
+    const rurl = method === 'put' ? '/api/computers/' + data.id : '/api/computers'
     return request({
-        url: '/api/computers',
+        url: rurl,
         method,
         data
     })
